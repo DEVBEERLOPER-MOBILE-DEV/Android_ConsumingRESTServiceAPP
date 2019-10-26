@@ -8,11 +8,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 
 import org.apache.http.conn.*;
@@ -39,6 +41,41 @@ public class MainActivity extends AppCompatActivity {
         callWebService("");
     }
 
+    public void sendData (View v) {
+        callPostService ();
+    }
+
+    public void callPostService () {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL urlService = new URL ("http://192.168.180.26:3000/aptos/changeAptoStatusBody" );
+                    HttpURLConnection connection =  (HttpURLConnection) urlService.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setRequestProperty("Content-Type", "application/json");
+                    connection.setDoOutput(true);
+                    DataOutputStream wr = new DataOutputStream (connection.getOutputStream());
+                    wr.writeBytes("{\"luzBano\":false,\"luzCocina\":true,\"luzHabitacion1\":false,\"luzHabitacion2\":false,\"luzHabitacion3\":true,\"luzHabitacion4\":true}");
+                    wr.close();
+
+                    InputStream responseBody = connection.getInputStream();
+                    if (connection.getResponseCode() == 200) {
+                        InputStreamReader responseBodyReader = new InputStreamReader(responseBody, "UTF-8");
+                    }
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (ProtocolException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
+    }
     public void callWebService(String serviceEndPoint){
 
         AsyncTask.execute(new Runnable() {
@@ -53,8 +90,6 @@ public class MainActivity extends AppCompatActivity {
 
                     if (connection.getResponseCode() == 200) {
                         // Success
-
-
                         InputStreamReader responseBodyReader = new InputStreamReader(responseBody, "UTF-8");
 
                         JsonReader jsonReader = new JsonReader(responseBodyReader);
